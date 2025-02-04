@@ -1,62 +1,81 @@
 using TBDel.Models;
 using TBDel.Services;
 
-namespace TBDel.Commands;
-
-public class AddCommand
+namespace TBDel.Commands
 {
-
-    public static async Task<Boolean> AddEntry(string[] args)
+    public class AddCommand
     {
-        // TODO: Add unique Id support
-        // TODO: Add duplicate path check
-        // TODO: Add support for multiple paths
-
-        if (args.Length > 1)
+        public static async Task AddEntry(string[] args)
         {
-            string workingDirectory = Directory.GetCurrentDirectory();
-            string absolutePath = Path.Combine(workingDirectory, args[1]);
-            if (File.Exists(absolutePath))
+            // TODO: Add duplicate path check
+            // TODO: Add support for multiple paths
+
+            if (args.Length > 1)
             {
-                Console.WriteLine($"Adding: {absolutePath}");
-                var entry = new FileEntry { Path = absolutePath, DateAdded = DateTime.Now };
+                string workingDirectory = Directory.GetCurrentDirectory();
+                string absolutePath = Path.Combine(workingDirectory, args[1]);
                 var dbService = new DbService();
-                if (await dbService.AddFileEntryAsync(entry))
+
+                if (File.Exists(absolutePath))
                 {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("File added successfully.");
-                    Console.ResetColor();
-                    return true;
+                    Console.WriteLine($"Adding: {absolutePath}");
+                    var entry = new FileEntry { Id = GenerateUniqueId(dbService), Path = absolutePath, DateAdded = DateTime.Now };
+                    if (await dbService.AddFileEntryAsync(entry))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("File added successfully.");
+                        Console.ResetColor();
+                        return;
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Failed to add file.");
+                        Console.ResetColor();
+                        return;
+                    }
                 }
-                else
+                else if (Directory.Exists(absolutePath))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Failed to add file.");
-                    Console.ResetColor();
-                    return false;
-                }
-            }
-            else if (Directory.Exists(absolutePath))
-            {
-                Console.WriteLine($"Adding: {absolutePath}");
-                var entry = new FolderEntry() { Path = absolutePath, DateAdded = DateTime.Now };
-                var dbService = new DbService();
-                if (await dbService.AddFolderEntryAsync(entry))
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("Directory added successfully.");
-                    Console.ResetColor();
-                    return true;
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Failed to add directory.");
-                    Console.ResetColor();
-                    return false;
+                    Console.WriteLine($"Adding: {absolutePath}");
+                    var entry = new FolderEntry() { Id = GenerateUniqueId(dbService), Path = absolutePath, DateAdded = DateTime.Now };
+                    if (await dbService.AddFolderEntryAsync(entry))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("Directory added successfully.");
+                        Console.ResetColor();
+                        return;
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Failed to add directory.");
+                        Console.ResetColor();
+                        return;
+                    }
                 }
             }
         }
-        return false;
+
+        private static uint GenerateUniqueId(DbService dbService)
+        {
+            // Hopefully not running away from me one day
+            Random random = new Random();
+            uint newId;
+            do
+            {
+                newId = (uint)random.Next(10000, 99999);
+            } while (IdExists(newId, dbService));
+            return newId;
+        }
+
+        private static bool IdExists(uint id, DbService dbService)
+        {
+            // Not async? Not a problem (yet(?))
+            var fileEntries = dbService.GetFileEntriesAsync().Result;
+            var folderEntries = dbService.GetFolderEntriesAsync().Result;
+
+            return fileEntries.Any(e => e.Id == id) || folderEntries.Any(e => e.Id == id);
+        }
     }
 }

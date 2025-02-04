@@ -1,55 +1,49 @@
 using TBDel.Services;
 
-namespace TBDel.Commands;
-
-public class DeleteCAllCommand
+namespace TBDel.Commands
 {
-    public static async Task DeleteAll()
+    public class DeleteAllCommand
     {
-        var dbService = new DbService();
-        var allFiles = await dbService.GetFileEntriesAsync();
-        var allFolders = await dbService.GetFolderEntriesAsync();
-     
-        if (allFiles.Count == 0 && allFolders.Count == 0)
+        public static async Task DeleteAll()
         {
-            Console.WriteLine("No files or folders found.");
-            return;
-        }
-        
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"Are you sure you want to permanently delete {allFiles.Count} file(s) and {allFolders.Count} folder(s)? (y/N)");
-        Console.ResetColor();
-        var input = Console.ReadLine();
-        if (input != "y")
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Operation cancelled.");
+            var dbService = new DbService();
+            var allFiles = await dbService.GetFileEntriesAsync();
+            var allFolders = await dbService.GetFolderEntriesAsync();
+
+            if (allFiles.Count == 0 && allFolders.Count == 0)
+            {
+                Console.WriteLine("No files or folders found.");
+                return;
+            }
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write($"Are you sure you want to permanently delete {allFiles.Count} file(s) and {allFolders.Count} folder(s)? (y/N)");
             Console.ResetColor();
-            return;
-        }
-        
-        var toBeDeletedFiles = new List<string>();
-        var toBeDeletedFolders = new List<string>();
-        foreach (var file in allFiles)
-        {
-            toBeDeletedFiles.Add(file.Path);
-        }
-        foreach (var folder in allFolders)
-        {
-            toBeDeletedFolders.Add(folder.Path);
-        }
-        
-        foreach (var file in toBeDeletedFiles)
-        {
-            Console.WriteLine($"Deleting file: {file}");
-            File.Delete(file);
-            await dbService.RemoveFileEntryAsync(file);
-        }
-        foreach (var folder in toBeDeletedFolders)
-        {
-            Console.WriteLine($"Deleting directory: {folder}");
-            Directory.Delete(folder, true);
-            await dbService.RemoveFolderEntryAsync(folder);
+            var input = Console.ReadLine();
+            if (input != "y")
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Operation cancelled.");
+                Console.ResetColor();
+                return;
+            }
+
+            foreach (var file in allFiles)
+            {
+                Console.WriteLine($"Deleting file: {file.Path}");
+                File.Delete(file.Path);
+                await dbService.RemoveFileEntryAsync(file.Id);
+            }
+            foreach (var folder in allFolders)
+            {
+                Console.WriteLine($"Deleting directory: {folder.Path}");
+                Directory.Delete(folder.Path, true);
+                await dbService.RemoveFolderEntryAsync(folder.Id);
+            }
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("All files and folders deleted successfully.");
+            Console.ResetColor();
         }
     }
 }

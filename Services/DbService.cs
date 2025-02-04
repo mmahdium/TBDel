@@ -66,9 +66,9 @@ namespace TBDel.Services
             return await Task.FromResult(_folderCollection.ToList());
         }
 
-        public async Task<bool> RemoveFileEntryAsync(string path)
+        public async Task<bool> RemoveFileEntryAsync(uint id)
         {
-            var entryToRemove = _fileCollection.FirstOrDefault(e => e.Path == path);
+            var entryToRemove = _fileCollection.FirstOrDefault(e => e.Id == id);
             if (entryToRemove != null)
             {
                 _fileCollection.Remove(entryToRemove);
@@ -78,9 +78,9 @@ namespace TBDel.Services
             return await Task.FromResult(false);
         }
 
-        public async Task<bool> RemoveFolderEntryAsync(string path)
+        public async Task<bool> RemoveFolderEntryAsync(uint id)
         {
-            var entryToRemove = _folderCollection.FirstOrDefault(e => e.Path == path);
+            var entryToRemove = _folderCollection.FirstOrDefault(e => e.Id == id);
             if (entryToRemove != null)
             {
                 _folderCollection.Remove(entryToRemove);
@@ -89,6 +89,8 @@ namespace TBDel.Services
             }
             return await Task.FromResult(false);
         }
+
+
     }
 
     public class DatabaseContent

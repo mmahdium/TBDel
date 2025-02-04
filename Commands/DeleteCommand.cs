@@ -1,35 +1,38 @@
 using TBDel.Models;
 using TBDel.Services;
 
-namespace TBDel.Commands;
-
-
-public class DeleteCommand
+namespace TBDel.Commands
 {
-    // Will be done by unique file Id
-    public static async Task DeleteEntry(string[] args)
+    public class DeleteCommand
     {
-        var dbService = new DbService();
-        if (args.Length > 1)
+        public static async Task DeleteEntry(string[] args)
         {
-            if (File.Exists(args[1]))
+            var dbService = new DbService();
+            if (args.Length > 1 && uint.TryParse(args[1], out uint id))
             {
-                Console.WriteLine($"Deleteing file: {args[1]}");
-                if (await dbService.RemoveFileEntryAsync(args[1]))
+                Console.WriteLine($"Deleting entry with ID: {id}");
+                bool fileDeleted = await dbService.RemoveFileEntryAsync(id);
+                bool folderDeleted = await dbService.RemoveFolderEntryAsync(id);
+
+                if (fileDeleted || folderDeleted)
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("File deleted successfully");
+                    Console.WriteLine("Entry deleted successfully.");
                     Console.ResetColor();
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("something went wrong");
+                    Console.WriteLine("Something went wrong. Entry not found.");
                     Console.ResetColor();
                 }
             }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Invalid or missing ID argument.");
+                Console.ResetColor();
+            }
         }
-
-        
     }
 }
