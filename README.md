@@ -3,7 +3,10 @@
 
 ## Installation
 
-Soon...
+- Install on Arch Linux (aur)
+```shell
+paru -S tbdel
+```
 
 ## Usage
 
