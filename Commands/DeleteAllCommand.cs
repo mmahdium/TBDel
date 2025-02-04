@@ -2,7 +2,7 @@ using TBDel.Services;
 
 namespace TBDel.Commands;
 
-public class DeleteCommand
+public class DeleteCAllCommand
 {
     public static async Task DeleteAll()
     {

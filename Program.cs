@@ -23,10 +23,10 @@ namespace TBDel
                     await AddCommand.AddEntry(args);
                     break;
                 case "delete":
-                    
+                    await DeleteCommand.DeleteEntry(args);
                     break;
                 case "deleteall":
-                    await DeleteCommand.DeleteAll();
+                    await DeleteCAllCommand.DeleteAll();
                     break;
                 case "list":
                     await ListCommand.List(args);

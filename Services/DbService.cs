@@ -1,64 +1,105 @@
-using JsonFlatFileDataStore;
+using System.Text.Json;
 using TBDel.Models;
 
-namespace TBDel.Services;
-
-public class DbService 
+namespace TBDel.Services
 {
-    private readonly DataStore _store;
-    private readonly IDocumentCollection<FileEntry> _fileCollection;
-    private readonly IDocumentCollection<FolderEntry> _folderCollection;
-
-    public DbService() 
+    public class DbService
     {
-        string dbPath =
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TBDel_Db.json");
-        var _store = new DataStore(dbPath,minifyJson:true);
-        _fileCollection = _store.GetCollection<FileEntry>();
-        _folderCollection = _store.GetCollection<FolderEntry>();
-    }
+        private readonly string _dbPath;
+        private List<FileEntry> _fileCollection;
+        private List<FolderEntry> _folderCollection;
 
-
-    public async Task<Boolean> AddFileEntryAsync(FileEntry entry)
-    {
-        return await _fileCollection.InsertOneAsync(entry);
-    }
-
-    public async Task<Boolean> AddFolderEntryAsync(FolderEntry entry)
-    {
-        return await _folderCollection.InsertOneAsync(entry);
-        
-    }
-
-    public async Task<List<FileEntry>> GetFileEntriesAsync()
-    {
-        return _fileCollection.AsQueryable().ToList();
-    }
-
-    public async Task<List<FolderEntry>> GetFolderEntriesAsync()
-    {
-        return _folderCollection.AsQueryable().ToList();
-    }
-
-
-    public  async Task<Boolean> RemoveFileEntryAsync(string path)
-    {
-        var entryToRemove = _fileCollection.AsQueryable().FirstOrDefault(e => e.Path == path);
-        if (entryToRemove != null)
+        public DbService()
         {
-            return await _fileCollection.DeleteOneAsync(e => e.Path == path); // or entryToRemove.Path
+            _dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TBDel_Db.json");
+            LoadData();
         }
 
-        return false;
+        private void LoadData()
+        {
+            if (File.Exists(_dbPath))
+            {
+                var json = File.ReadAllText(_dbPath);
+                var dbContent = JsonSerializer.Deserialize(json, JsonContext.Default.DatabaseContent) ?? new DatabaseContent();
+                _fileCollection = dbContent.FileEntries;
+                _folderCollection = dbContent.FolderEntries;
+            }
+            else
+            {
+                _fileCollection = new List<FileEntry>();
+                _folderCollection = new List<FolderEntry>();
+            }
+        }
+
+        private void SaveData()
+        {
+            var dbContent = new DatabaseContent
+            {
+                FileEntries = _fileCollection,
+                FolderEntries = _folderCollection
+            };
+            var json = JsonSerializer.Serialize(dbContent, JsonContext.Default.DatabaseContent);
+            File.WriteAllText(_dbPath, json);
+        }
+
+        public async Task<bool> AddFileEntryAsync(FileEntry entry)
+        {
+            _fileCollection.Add(entry);
+            SaveData();
+            return await Task.FromResult(true);
+        }
+
+        public async Task<bool> AddFolderEntryAsync(FolderEntry entry)
+        {
+            _folderCollection.Add(entry);
+            SaveData();
+            return await Task.FromResult(true);
+        }
+
+        public async Task<List<FileEntry>> GetFileEntriesAsync()
+        {
+            return await Task.FromResult(_fileCollection.ToList());
+        }
+
+        public async Task<List<FolderEntry>> GetFolderEntriesAsync()
+        {
+            return await Task.FromResult(_folderCollection.ToList());
+        }
+
+        public async Task<bool> RemoveFileEntryAsync(string path)
+        {
+            var entryToRemove = _fileCollection.FirstOrDefault(e => e.Path == path);
+            if (entryToRemove != null)
+            {
+                _fileCollection.Remove(entryToRemove);
+                SaveData();
+                return await Task.FromResult(true);
+            }
+            return await Task.FromResult(false);
+        }
+
+        public async Task<bool> RemoveFolderEntryAsync(string path)
+        {
+            var entryToRemove = _folderCollection.FirstOrDefault(e => e.Path == path);
+            if (entryToRemove != null)
+            {
+                _folderCollection.Remove(entryToRemove);
+                SaveData();
+                return await Task.FromResult(true);
+            }
+            return await Task.FromResult(false);
+        }
     }
 
-    public async Task<Boolean> RemoveFolderEntryAsync(string path)
+    public class DatabaseContent
     {
-        var entryToRemove = _folderCollection.AsQueryable().FirstOrDefault(e => e.Path == path);
-        if (entryToRemove != null)
+        public DatabaseContent()
         {
-            return await _folderCollection.DeleteOneAsync(e => e.Path == path); // or entryToRemove.Path
+            FileEntries = new List<FileEntry>();
+            FolderEntries = new List<FolderEntry>();
         }
-        return false;
+
+        public List<FileEntry> FileEntries { get; set; }
+        public List<FolderEntry> FolderEntries { get; set; }
     }
 }
