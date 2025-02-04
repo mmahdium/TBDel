@@ -44,7 +44,25 @@ namespace TBDel.Commands
                 }
                 else if (Directory.Exists(filePath))
                 {
-                    Directory.Delete(filePath);
+                    try
+                    {
+                        Directory.Delete(filePath, true);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        if (e.Message.Contains("Directory not empty"))
+                        {
+                            Console.WriteLine("Directory is not empty. It must be empty before it can be deleted or deleted manually.");
+                            
+                        }
+                        
+                        Console.WriteLine("Something went wrong while deleting the directory.");
+                        Console.ResetColor();
+                        Console.WriteLine(e.Message);
+                        return;
+                    }
+                    
                     if (await dbService.RemoveFolderEntryAsync(id))
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
