@@ -34,9 +34,9 @@ help             Shows this help message
   tbdel list
   ```
 
-* Delete an entry (using its ID):
+* Delete an entry (using its ID): **(Assuming '12345' is the ID of the entry you want to delete)**
   ```shell
-  tbdel delete 12345  (Assuming '12345' is the ID of the entry you want to delete)
+  tbdel delete 12345
   ```
 
 * Delete all entries:
