@@ -17,7 +17,7 @@ namespace TBDel.Commands
             }
 
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write($"Are you sure you want to permanently delete {allFiles.Count} file(s) and {allFolders.Count} folder(s)? (y/N)");
+            Console.Write($"Are you sure you want to permanently delete {allFiles.Count} file(s) and {allFolders.Count} folder(s)? (y/N) ");
             Console.ResetColor();
             var input = Console.ReadLine();
             if (input != "y")

@@ -8,12 +8,16 @@ namespace TBDel.Commands
         public static async Task DeleteEntry(string[] args)
         {
             var dbService = new DbService();
+            
             if (args.Length > 1 && uint.TryParse(args[1], out uint id))
             {
+                var filePath = await dbService.GetEntryPath(id);
+
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"Are you sure you want to permanently delete entry with ID {id}? (y/N)");
+                Console.Write($"Are you sure you want to permanently delete entry with ID {id}? (y/N) ");
                 Console.ResetColor();
                 var input = Console.ReadLine();
+                
                 if (input != "y")
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
@@ -22,9 +26,9 @@ namespace TBDel.Commands
                     return;
                 }
 
-                if (File.Exists(args[1]))
+                if (File.Exists(filePath))
                 {
-                    File.Delete(args[1]);
+                    File.Delete(filePath);
                     if (await dbService.RemoveFileEntryAsync(id))
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
@@ -38,9 +42,9 @@ namespace TBDel.Commands
                         Console.ResetColor();
                     }
                 }
-                else if (Directory.Exists(args[1]))
+                else if (Directory.Exists(filePath))
                 {
-                    Directory.Delete(args[1]);
+                    Directory.Delete(filePath);
                     if (await dbService.RemoveFolderEntryAsync(id))
                     {
                         Console.ForegroundColor = ConsoleColor.Green;

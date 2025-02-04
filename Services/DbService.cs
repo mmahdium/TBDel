@@ -90,6 +90,21 @@ namespace TBDel.Services
             return await Task.FromResult(false);
         }
 
+        
+        public async Task<string> GetEntryPath(uint id)
+        {
+            var fileEntry = _fileCollection.FirstOrDefault(e => e.Id == id);
+            if (fileEntry != null)
+            {
+                return fileEntry.Path;
+            }
+            var folderEntry = _folderCollection.FirstOrDefault(e => e.Id == id);
+            if (folderEntry != null)
+            {
+                return folderEntry.Path;
+            }
+            return String.Empty;
+        }
 
     }
 
