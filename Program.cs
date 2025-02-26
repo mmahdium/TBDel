@@ -4,7 +4,6 @@ namespace TBDel
 {
     internal class Program
     {
-        // TODO: Add a command to remove a file or folder only from the list
         static async Task Main(string[] args)
         {
             // Show the help message if no arguments are provided
@@ -26,6 +25,9 @@ namespace TBDel
                     break;
                 case "deleteall":
                     await DeleteAllCommand.DeleteAll();
+                    break;
+                case "rmflist":
+                    await RemoveFromListCommand.DeleteEntryFromList(args);
                     break;
                 case "list":
                     await ListCommand.List(args);

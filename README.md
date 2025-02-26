@@ -16,6 +16,7 @@ Usage: tbdel <command> [arguments]
 Available commands:
 add <path to file or folder>       Add a file or folder to the list
 delete <file or folder ID>         Deletes a file or folder
+rmflist          Remove an entry ONLY from the list
 deleteall        Deletes all items in the list
 list             Lists all items in the list
 help             Shows this help message
@@ -35,6 +36,11 @@ help             Shows this help message
 * List all entries:
   ```shell
   tbdel list
+  ```
+  
+* Remove an entry ONLY from the list: **(Assuming '12345' is the ID of the entry you want to remove from the list)**
+  ```shell
+  tbdel rmflist 12345
   ```
 
 * Delete an entry (using its ID): **(Assuming '12345' is the ID of the entry you want to delete)**

@@ -22,6 +22,7 @@ public static class HelpCommand
         Console.WriteLine("  add <path to file or folder>       Add a file or folder to the list");
         Console.WriteLine("  delete <file or folder ID>         Deletes a file or folder");
         Console.WriteLine("  deleteall        Deletes all items in the list");
+        Console.WriteLine("  rmflist          Remove an entry ONLY from the list");
         Console.WriteLine("  list             Lists all items in the list");
         Console.WriteLine("  help             Shows this help message");
     }
