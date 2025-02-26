@@ -4,7 +4,6 @@ namespace TBDel
 {
     internal class Program
     {
-        // TODO: Add a command to show the Db path
         // TODO: Add a command to remove a file or folder only from the list
         static async Task Main(string[] args)
         {

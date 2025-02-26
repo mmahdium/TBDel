@@ -106,6 +106,16 @@ namespace TBDel.Services
             return String.Empty;
         }
 
+        public async Task<bool> EtryExists(String path)
+        {
+            if (_fileCollection.Find(f => f.Path == path) is not null || _folderCollection.Find(f => f.Path == path) is not null)
+            {
+                return await Task.FromResult(true);
+            }
+            return await Task.FromResult(false);
+        }
+
+
     }
 
     public class DatabaseContent

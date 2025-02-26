@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using TBDel.Models;
 using TBDel.Services;
 
@@ -7,9 +8,6 @@ namespace TBDel.Commands
     {
         public static async Task AddEntry(string[] args)
         {
-            // TODO: Add duplicate path check
-            // TODO: Add support for multiple paths
-
             if (args.Length > 1)
             {
                 string workingDirectory = Directory.GetCurrentDirectory();
@@ -19,6 +17,12 @@ namespace TBDel.Commands
                 if (File.Exists(absolutePath))
                 {
                     Console.WriteLine($"Adding: {absolutePath}");
+                    if (await dbService.EtryExists(absolutePath))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine("File already exists in the list - No actions performed.");
+                        return;
+                    }
                     var entry = new FileEntry { Id = GenerateUniqueId(dbService), Path = absolutePath, DateAdded = DateTime.Now };
                     if (await dbService.AddFileEntryAsync(entry))
                     {
@@ -38,6 +42,12 @@ namespace TBDel.Commands
                 else if (Directory.Exists(absolutePath))
                 {
                     Console.WriteLine($"Adding: {absolutePath}");
+                    if (await dbService.EtryExists(absolutePath))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine("Folder already exists in the list - No actions performed.");
+                        return;
+                    }
                     var entry = new FolderEntry() { Id = GenerateUniqueId(dbService), Path = absolutePath, DateAdded = DateTime.Now };
                     if (await dbService.AddFolderEntryAsync(entry))
                     {
