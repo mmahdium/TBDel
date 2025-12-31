@@ -12,81 +12,92 @@ public class DeleteAllCommand
 
         if (allFiles.Count == 0 && allFolders.Count == 0)
         {
-            Console.WriteLine("No files or folders found.");
+            TuiHelper.DisplayInfo("No files or folders found.");
             return;
         }
 
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.Write(
-            $"Are you sure you want to permanently delete {allFiles.Count} file(s) and {allFolders.Count} folder(s)? (y/N) ");
-        Console.ResetColor();
-        var input = Console.ReadLine();
-        if (input != "y")
+        TuiHelper.DisplayHeader("TBDel - Delete All Entries");
+
+        // Display summary before confirmation
+        TuiHelper.DisplaySummary("Deletion Summary",
+            ("Files to delete", allFiles.Count.ToString()),
+            ("Folders to delete", allFolders.Count.ToString()),
+            ("Total items", (allFiles.Count + allFolders.Count).ToString())
+        );
+
+        if (!TuiHelper.GetConfirmation("Permanently delete ALL entries?"))
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Operation cancelled.");
-            Console.ResetColor();
+            TuiHelper.DisplayInfo("Operation cancelled.");
             return;
         }
+
+        int deletedFiles = 0;
+        int deletedFolders = 0;
+        int failedDeletions = 0;
 
         foreach (var file in allFiles)
         {
             if (!File.Exists(file.Path))
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"File {file.Path} does not exist, removing from list.");
-                Console.ResetColor();
+                TuiHelper.DisplayWarning($"File {file.Path} does not exist, removing from list.");
                 await dbService.RemoveFileEntryAsync(file.Id);
                 continue;
             }
 
-            Console.WriteLine($"Deleting file: {file.Path}");
+            TuiHelper.DisplayInfo($"Deleting file: {file.Path}");
             try
             {
                 File.Delete(file.Path);
+                await dbService.RemoveFileEntryAsync(file.Id);
+                deletedFiles++;
             }
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Something went wrong while deleting the file.");
+                TuiHelper.DisplayError("Something went wrong while deleting the file.");
                 Console.WriteLine(e.Message);
-                Console.ResetColor();
-                return;
+                failedDeletions++;
             }
-
-            await dbService.RemoveFileEntryAsync(file.Id);
         }
 
         foreach (var folder in allFolders)
         {
             if (!Directory.Exists(folder.Path))
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"Directory {folder.Path} does not exist, removing from list.");
-                Console.ResetColor();
+                TuiHelper.DisplayWarning($"Directory {folder.Path} does not exist, removing from list.");
                 await dbService.RemoveFolderEntryAsync(folder.Id);
                 continue;
             }
 
-            Console.WriteLine($"Deleting directory: {folder.Path}");
+            TuiHelper.DisplayInfo($"Deleting directory: {folder.Path}");
             try
             {
                 Directory.Delete(folder.Path, true);
+                await dbService.RemoveFolderEntryAsync(folder.Id);
+                deletedFolders++;
             }
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Something went wrong while deleting the directory.");
+                TuiHelper.DisplayError("Something went wrong while deleting the directory.");
                 Console.WriteLine(e.Message);
-                Console.ResetColor();
-                return;
+                failedDeletions++;
             }
-
-            await dbService.RemoveFolderEntryAsync(folder.Id);
         }
 
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("All files and folders deleted successfully.");
-        Console.ResetColor();
+        // Display final results
+        TuiHelper.DisplayHeader("Deletion Results");
+        TuiHelper.DisplaySummary("Summary",
+            ("Files deleted", deletedFiles.ToString()),
+            ("Folders deleted", deletedFolders.ToString()),
+            ("Failed deletions", failedDeletions.ToString())
+        );
+
+        if (failedDeletions == 0)
+        {
+            TuiHelper.DisplaySuccess("All files and folders deleted successfully.");
+        }
+        else
+        {
+            TuiHelper.DisplayWarning("Some items could not be deleted.");
+        }
     }
 }

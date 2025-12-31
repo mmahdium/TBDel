@@ -9,33 +9,37 @@ public class RemoveFromListCommand
         var dbService = new DbService();
         if (args.Length > 1 && uint.TryParse(args[1], out uint id))
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write($"Are you sure you want to remove the entry with ID {id} ONLY from the list? (y/N) ");
-            Console.ResetColor();
-            var input = Console.ReadLine();
-                            
-            if (input != "y")
+            var filePath = await dbService.GetEntryPath(id);
+
+            if (string.IsNullOrEmpty(filePath))
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Operation cancelled.");
-                Console.ResetColor();
+                TuiHelper.DisplayError($"No entry found with ID {id}.");
+                return;
+            }
+
+            TuiHelper.DisplayHeader("TBDel - Remove from List");
+            Console.WriteLine($"Entry ID: {id}");
+            Console.WriteLine($"Path: {filePath}");
+            Console.WriteLine();
+
+            if (!TuiHelper.GetConfirmation("Remove this entry ONLY from the list?"))
+            {
+                TuiHelper.DisplayInfo("Operation cancelled.");
                 return;
             }
 
             if (await dbService.RemoveFileEntryAsync(id) || await dbService.RemoveFolderEntryAsync(id))
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Entry removed from the list.");
-                Console.ResetColor();
+                TuiHelper.DisplaySuccess("Entry removed from the list.");
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Something went wrong while removing the entry from list.");
-                Console.ResetColor();
+                TuiHelper.DisplayError("Something went wrong while removing the entry from list.");
             }
         }
-
-        
+        else
+        {
+            TuiHelper.DisplayError("Invalid ID provided. Please provide a valid numeric ID.");
+        }
     }
 }

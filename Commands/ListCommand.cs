@@ -9,26 +9,27 @@ namespace TBDel.Commands
         {
             if (args.Length > 2)
             {
-                Console.WriteLine("Too many arguments.");
+                TuiHelper.DisplayError("Too many arguments.");
                 return;
             }
+
             if (args.Length == 1)
             {
-                Console.WriteLine("Listing both files and folders.");
+                TuiHelper.DisplayHeader("TBDel - List All Items");
+                TuiHelper.DisplayInfo("Listing both files and folders.");
+
                 await ListFiles();
-                for (int i = 0; i < 110; i++)
-                {
-                    Console.Write("-");
-                }
-                Console.Write("\n");
+                TuiHelper.DisplaySectionSeparator();
                 await ListFolders();
             }
             else if (args[1] == "files")
             {
+                TuiHelper.DisplayHeader("TBDel - List Files");
                 await ListFiles();
             }
             else if (args[1] == "folders")
             {
+                TuiHelper.DisplayHeader("TBDel - List Folders");
                 await ListFolders();
             }
         }
@@ -40,17 +41,17 @@ namespace TBDel.Commands
 
             if (filesList.Count == 0)
             {
-                Console.WriteLine("No files found.");
+                TuiHelper.DisplayInfo("No files found.");
                 return;
             }
 
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Found {0} file(s):\n", filesList.Count);
-            Console.WriteLine("{0,-10} {1,-90} {2,10}\n", "ID", "Path", "Date added");
-            Console.ResetColor();
+            TuiHelper.DisplayInfo($"Found {filesList.Count} file(s):");
+            Console.WriteLine();
+            TuiHelper.DisplayTableHeader("ID", "Path", "Date Added", 10, 60, 20);
+
             foreach (var file in filesList)
             {
-                Console.WriteLine("{0,-10} {1,-90} {2,10}", file.Id, file.Path, file.DateAdded);
+                TuiHelper.DisplayTableRow(file.Id, file.Path, file.DateAdded, 10, 60, 20);
             }
         }
 
@@ -61,17 +62,17 @@ namespace TBDel.Commands
 
             if (foldersList.Count == 0)
             {
-                Console.WriteLine("No folders found.");
+                TuiHelper.DisplayInfo("No folders found.");
                 return;
             }
 
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Found {0} folder(s):\n", foldersList.Count);
-            Console.WriteLine("{0,-10} {1,-90} {2,10}\n", "ID", "Path", "Date added");
-            Console.ResetColor();
+            TuiHelper.DisplayInfo($"Found {foldersList.Count} folder(s):");
+            Console.WriteLine();
+            TuiHelper.DisplayTableHeader("ID", "Path", "Date Added", 10, 60, 20);
+
             foreach (var folder in foldersList)
             {
-                Console.WriteLine("{0,-10} {1,-90} {2,10}", folder.Id, folder.Path, folder.DateAdded);
+                TuiHelper.DisplayTableRow(folder.Id, folder.Path, folder.DateAdded, 10, 60, 20);
             }
         }
     }

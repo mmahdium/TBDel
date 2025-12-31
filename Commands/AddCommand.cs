@@ -16,54 +16,54 @@ namespace TBDel.Commands
 
                 if (File.Exists(absolutePath))
                 {
-                    Console.WriteLine($"Adding: {absolutePath}");
+                    TuiHelper.DisplayInfo($"Adding file: {absolutePath}");
                     if (await dbService.EtryExists(absolutePath))
                     {
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine("File already exists in the list - No actions performed.");
+                        TuiHelper.DisplayWarning("File already exists in the list - No actions performed.");
                         return;
                     }
                     var entry = new FileEntry { Id = GenerateUniqueId(dbService), Path = absolutePath, DateAdded = DateTime.Now };
                     if (await dbService.AddFileEntryAsync(entry))
                     {
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("File added successfully.");
-                        Console.ResetColor();
+                        TuiHelper.DisplaySuccess("File added successfully.");
                         return;
                     }
                     else
                     {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("Failed to add file.");
-                        Console.ResetColor();
+                        TuiHelper.DisplayError("Failed to add file.");
                         return;
                     }
                 }
                 else if (Directory.Exists(absolutePath))
                 {
-                    Console.WriteLine($"Adding: {absolutePath}");
+                    TuiHelper.DisplayInfo($"Adding directory: {absolutePath}");
                     if (await dbService.EtryExists(absolutePath))
                     {
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine("Folder already exists in the list - No actions performed.");
+                        TuiHelper.DisplayWarning("Folder already exists in the list - No actions performed.");
                         return;
                     }
                     var entry = new FolderEntry() { Id = GenerateUniqueId(dbService), Path = absolutePath, DateAdded = DateTime.Now };
                     if (await dbService.AddFolderEntryAsync(entry))
                     {
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("Directory added successfully.");
-                        Console.ResetColor();
+                        TuiHelper.DisplaySuccess("Directory added successfully.");
                         return;
                     }
                     else
                     {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("Failed to add directory.");
-                        Console.ResetColor();
+                        TuiHelper.DisplayError("Failed to add directory.");
                         return;
                     }
                 }
+                else
+                {
+                    TuiHelper.DisplayError($"Path does not exist: {absolutePath}");
+                    return;
+                }
+            }
+            else
+            {
+                TuiHelper.DisplayError("No path provided. Please specify a file or folder to add.");
+                return;
             }
         }
 
