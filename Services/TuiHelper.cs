@@ -16,10 +16,16 @@ namespace TBDel.Services
         // Display a styled header
         public static void DisplayHeader(string title)
         {
-            var border = new string('═', Math.Min(title.Length + 4, 80));
+            var borderLength = Math.Max(title.Length + 4, 30); // Ensure minimum length
+            var border = new string('═', borderLength);
             Console.ForegroundColor = HeaderColor;
             Console.WriteLine($"\n╔{border}╗");
-            Console.WriteLine($"║ {title} ║");
+            // Center the title within the border
+            var padding = (borderLength - title.Length) / 2;
+            var leftPadding = padding;
+            var rightPadding = borderLength - title.Length - leftPadding;
+            var paddedTitle = new string(' ', leftPadding) + title + new string(' ', rightPadding);
+            Console.WriteLine($"║{paddedTitle}║");
             Console.WriteLine($"╚{border}╝");
             Console.ResetColor();
         }
@@ -42,10 +48,11 @@ namespace TBDel.Services
         }
 
         // Display a table separator line
-        public static void DisplayTableSeparator(int idWidth = 10, int pathWidth = 70, int dateWidth = 20)
+        public static void DisplayTableSeparator(int idWidth = 10, int pathWidth = 60, int dateWidth = 20)
         {
             Console.ForegroundColor = BorderColor;
-            var totalWidth = idWidth + pathWidth + dateWidth + 4; // +4 for the spaces and separators
+            // Calculate total width: idWidth + " │ " + pathWidth + " │ " + dateWidth
+            var totalWidth = idWidth + 3 + pathWidth + 3 + dateWidth; // 3 chars for " │ " separator
             Console.WriteLine(new string('─', totalWidth));
             Console.ResetColor();
         }
@@ -103,17 +110,30 @@ namespace TBDel.Services
         // Display a styled summary box
         public static void DisplaySummary(string title, params (string label, string value)[] items)
         {
-            Console.ForegroundColor = HeaderColor;
-            Console.WriteLine($"\n┌─ {title} ─{'─'.Repeat(Math.Max(0, 50 - title.Length))}");
-            Console.ResetColor();
-            
+            // Calculate the max width needed for the content
+            int contentWidth = Math.Max(title.Length + 2, 28); // +2 for the ─ ─ spacing around title, minimum 30 total
             foreach (var (label, value) in items)
             {
-                Console.WriteLine($"│ {label}: {value}");
+                int itemLength = (label + ": " + value).Length;
+                if (itemLength > contentWidth) contentWidth = itemLength;
             }
-            
+
             Console.ForegroundColor = HeaderColor;
-            Console.WriteLine($"└{'─'.Repeat(50)}┘");
+            var topBorder = $"┌─ {title} ─{'─'.Repeat(Math.Max(0, contentWidth - title.Length - 2))}┐";
+            Console.WriteLine($"\n{topBorder}");
+            Console.ResetColor();
+
+            foreach (var (label, value) in items)
+            {
+                var content = $"│ {label}: {value}";
+                var padding = contentWidth - (label.Length + value.Length + 2); // 2 for ": "
+                var paddedContent = content + new string(' ', padding) + "│";
+                Console.WriteLine(paddedContent);
+            }
+
+            Console.ForegroundColor = HeaderColor;
+            var bottomBorder = $"└{'─'.Repeat(contentWidth + 2)}┘"; // +2 for the │ │ borders
+            Console.WriteLine(bottomBorder);
             Console.ResetColor();
         }
     }
